@@ -1,5 +1,5 @@
 {
-  "name": "inventory-application",
+  "name": "comic-inventory-app",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
