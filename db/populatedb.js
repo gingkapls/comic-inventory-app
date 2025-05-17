@@ -1,4 +1,5 @@
 const { Client } = require('pg');
+const { addComic } = require('./queries');
 require('dotenv').config();
 
 const client = new Client({
@@ -80,17 +81,51 @@ const SQL = `
       INNER JOIN Publisher_Publishes_Comics AS PPC ON Comics.ComicID = PPC.ComicId
       INNER JOIN Publishers ON Publishers.PublisherId = PPC.PublisherId
       INNER JOIN Artists_Draw_Comics AS ADC On Comics.ComicId = ADC.ComicId
-      INNER JOIN Artists ON Artists.ArtistId = ADC.ArtistId
-      INNER JOIN Comics_Tags On Comics_Tags.ComicId = Comics.ComicId
-      INNER JOIN Tags on Tags.TagId = Comics_Tags.TagId;
-      
+      INNER JOIN Artists ON Artists.ArtistId = ADC.ArtistId;
 `;
+
+async function insertComics() {
+  try {
+    await addComic({
+      name: 'One Punch Man',
+      publishdate: '01/01/2009',
+      description: 'It tells the story of Saitama, an independent superhero who, ' +
+        'having trained to the point that he can defeat any opponent ' +
+        'with a single punch, grows bored from a lack of challenge. ' +
+        'He sets out to find powerful opponents, while making allies of other heroes as well.',
+      artistFirstName: 'Yusuke',
+      artistLastName: 'Murata',
+      authorFirstName: 'One',
+      authorLastName: '',
+      publisherName: 'Shueisha',
+      tags: ['Action', 'Thriller'],
+    });
+    
+      await addComic({
+      name: "Jojo's Bizzare Adventures - Part 1: Phantom Blood",
+      publishdate: '01/01/1987',
+      description: 'The story is set in England in the middle-to-late 1880s, and follows Jonathan Joestar, ' +
+        'the heir of the wealthy Joestar family, and his adoptive brother Dio Brando, ' +
+        'who wishes to take the Joestar fortune for himself. ',
+      artistFirstName: 'Araki',
+      artistLastName: 'Hirohiko',
+      authorFirstName: 'Araki',
+      authorLastName: 'Hirohiko',
+      publisherName: 'Shueisha',
+      tags: ['Action', 'Romance'],
+    });
+  } catch (e) {
+    console.error("couldn't be added", e);
+  }
+}
+
 
 async function main() {
   try {
     console.log('Seeding...');
     await client.connect();
     await client.query(SQL);
+    await insertComics();
     console.log('Done');
   } catch (e) {
     console.error('There was an error', e);

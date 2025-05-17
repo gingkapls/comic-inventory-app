@@ -1,0 +1,11 @@
+<div class="comic-card">
+  <h3><%= comic.name %></h3>
+  <span><%= comic.authorfirstname %></span>
+  <span><%= comic.authorlastname %>,</span>
+  <span><%= comic.artistfirstname %></span>
+  <span><%= comic.artistlastname %>,</span>
+  <span><%= comic.publishername %></span><span> | </span>
+  <span><%= comic.tagname %></span>
+  <a href="<%= '/comics/' + comic.comicid %>">View details</a>
+  <a href="<%= '/comics/update/' + comic.comicid %>">Update details</a>
+</div>

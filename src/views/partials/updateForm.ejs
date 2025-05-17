@@ -1,0 +1,59 @@
+<form method="POST">
+  <label>
+    Comic Name:
+    <input type="text" name="name" value="<%= comic.name %>" />
+  </label>
+  <label>
+    Publish Date: <%= comic.publishdate %>
+    <input type="date" name="publishdate" value="<%= comic.publishdate %>" />
+  </label>
+  <label>
+    Author First Name:
+    <input
+      type="text"
+      name="authorfirstname"
+      value="<%= comic.authorfirstname %>"
+    />
+  </label>
+  <label>
+    Author Last Name:
+    <input
+      type="text"
+      name="authorlastname"
+      value="<%= comic.authorlastname %>"
+    />
+  </label>
+  <label>
+    Artist First Name:
+    <input
+      type="text"
+      name="artistfirstname"
+      value="<%= comic.artistfirstname %>"
+    />
+  </label>
+  <label>
+    Artist Last Name:
+    <input
+      type="text"
+      name="artistlastname"
+      value="<%= comic.artistlastname %>"
+    />
+  </label>
+  <label>
+    Publisher:
+    <input
+      type="text"
+      name="publishername"
+      value="<%= comic.publishername %>"
+    />
+  </label>
+  <label>
+    Tags: <% tags.forEach(tag => { %>
+    <label>
+      <%= tag %> <input type="checkbox" name="tags" value="<%= tag %>" <%=
+      comic.tags.includes(tag) ? "checked" : "" %>>
+    </label>
+    <% }) %>
+  </label>
+  <button type="submit">Submit</button>
+</form>

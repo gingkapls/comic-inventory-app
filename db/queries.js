@@ -8,6 +8,7 @@ async function insertPublisher({ name }) {
   );
   return rows[0];
 }
+
 async function insertAuthor({ firstName, lastName }) {
   const { rows } = await pool.query(
     'INSERT INTO Authors (FirstName, LastName) values ($1, $2) RETURNING AuthorId, FirstName, LastName',
@@ -15,6 +16,7 @@ async function insertAuthor({ firstName, lastName }) {
   );
   return rows[0];
 }
+
 async function insertArtist({ firstName, lastName }) {
   const { rows } = await pool.query(
     'INSERT INTO Artists (FirstName, LastName) values ($1, $2) RETURNING ArtistId, FirstName, LastName',
@@ -23,10 +25,10 @@ async function insertArtist({ firstName, lastName }) {
   return rows[0];
 }
 
-async function insertComic({ name, publishDate, description }) {
+async function insertComic({ name, publishdate, description }) {
   const { rows } = await pool.query(
     `INSERT INTO Comics (Name, PublishDate, Description) values ($1, $2, $3) RETURNING ComicId, Name, PublishDate, Description`,
-    [name, publishDate, description]
+    [name, publishdate, description]
   );
   return rows[0];
 }
@@ -55,7 +57,7 @@ async function getPublisherId({ name }) {
   return rows[0];
 }
 
-async function getComic({ name }) {
+async function getComicByName({ name }) {
   const { rows } = await pool.query('SELECT * from Comics WHERE name = $1', [
     name,
   ]);
@@ -148,10 +150,10 @@ async function updatePublisherById({ publisherId, name }) {
   return;
 }
 
-async function updateComicById({ comicId, name, publishDate, description }) {
+async function updateComicById({ comicId, name, publishdate, description }) {
   await pool.query(
     'UPDATE Comics SET NAME = ($2), PublishDate = ($3), DESCRIPTION = ($4) where ComicId = ($1)',
-    [comicId, name, publishDate, description]
+    [comicId, name, publishdate, description]
   );
 }
 
@@ -167,7 +169,7 @@ async function removeComicTags({ comicId }) {
 
 async function addComic({
   name,
-  publishDate,
+  publishdate,
   description,
   artistFirstName,
   artistLastName,
@@ -180,7 +182,7 @@ async function addComic({
     const { comicid: comicId } = await insertComic({
       name,
       description,
-      publishDate,
+      publishdate,
     });
 
     const { authorid: authorId } = await addOrGetAuthor({
@@ -209,28 +211,32 @@ async function addComic({
   }
 }
 
-async function getComicWorkerIds({ name, publishDate }) {
-  const { comicid, authorid, artistid, publisherid } = await pool.query(
+async function getComicWorkerIds({ comicid }) {
+  const { rows } = await pool.query(
     `SELECT AuthorId, ComicId, PublisherId, ArtistId
-    FROM Comics INNER JOIN Authors_Write_Comics as AWC on Comics.ComicId = AWC.ComidId
-    INNER JOIN Publishers on Publishers.PublisherId = AWC.PublisherId
-    INNER JOIN Artists on Artists.ArtistId = AWC.ArtistId
-    INNER JOIN Authors on Authors.ArtistId = AWC.AuthorId
-    WHERE Comics.Name = ($1) AND Comics.PublishDate = ($2)`,
-    [name, publishDate]
+    FROM DeepComicDetails
+    WHERE ComicId = ($1)`
   );
 
+  const {
+    comicid: comicId,
+    authorId: authorId,
+    artistId: artistId,
+    publisherid: publisherId,
+  } = rows[0];
+
   return {
-    comicId: comicid,
-    authorId: authorid,
-    artistId: artistid,
-    publisherId: publisherid,
+    comicId,
+    authorId,
+    artistId,
+    publisherId,
   };
 }
 
 async function updateComic({
+  comicId,
   name,
-  publishDate,
+  publishdate,
   description,
   artistFirstName,
   artistLastName,
@@ -240,11 +246,11 @@ async function updateComic({
   tags,
 }) {
   try {
-    const { comicId, authorId, artistId, publisherId } = getComicWorkerIds({
-      name,
+    const { authorId, artistId, publisherId } = await getComicWorkerIds({
+      comicId,
     });
 
-    updateComicById({ comicId, name, publishDate, description });
+    updateComicById({ comicId, name, publishdate, description });
     updateArtistById({
       artistId,
       firstName: artistFirstName,
@@ -259,9 +265,9 @@ async function updateComic({
 
     removeComicTags({ comicId });
 
-    tags.forEach((tagName) => {
-      linkComicTags({ comicId, tagName });
-    });
+    for (const tagName of tags) {
+      await linkComicTags({ comicId, tagName });
+    }
   } catch (e) {
     console.error('there was an error', e);
   }
@@ -272,6 +278,15 @@ async function getAllTags() {
   return rows.map((row) => row.tagname);
 }
 
+async function getTagsByComidId(comicId) {
+  const { rows } = await pool.query(
+    `SELECT TagName from Tags WHERE TagId IN (SELECT TagId FROM Comics_Tags WHERE ComicId = ($1))`,
+    [comicId]
+  );
+
+  return rows.map((row) => row.tagname);
+}
+
 async function getAllComics() {
   const { rows } = await pool.query(`SELECT * FROM DeepComicDetails`);
   return rows;
@@ -279,33 +294,36 @@ async function getAllComics() {
 
 async function getComicsByTagName(tagname) {
   const { rows } = await pool.query(
-    `SELECT Comics.* from DeepComicDetails where TagName = ($1)`,
+    `SELECT Comics.* from DeepComicDetails
+      WHERE ComicId IN
+        (SELECT ComicID
+          FROM Comics_Tags
+          WHERE TagId IN
+            (SELECT TagId
+              FROM TAGS
+              WHERE TagName = ($1)))`,
     [tagname]
   );
 
   return rows;
 }
 
-async function main() {
-  try {
-    await addComic({
-      name: 'Jojo',
-      publishDate: '01/01/1970',
-      description: 'This is a Comic',
-      artistFirstName: 'Jotaro',
-      artistLastName: 'Kujo',
-      authorFirstName: 'Miyazaki',
-      authorLastName: 'Hayato',
-      publisherName: 'Star Comics',
-      tags: ['Romance', 'Action'],
-    });
-  } catch (e) {
-    console.error("couldn't be added", e);
-  }
-  const res = await getAllComics();
-  console.log(res);
+async function getComicById(comicId) {
+  const { rows } = await pool.query(
+    'SELECT * from DeepComicDetails WHERE ComicId = $1',
+    [comicId]
+  );
+  const tags = await getTagsByComidId(comicId);
+
+  return { ...rows[0], tags };
 }
 
-main();
-
-module.exports = { addComic, updateComic, getAllTags, getComicsByTagName };
+module.exports = {
+  addComic,
+  updateComic,
+  getAllTags,
+  getComicsByTagName,
+  getComicByName,
+  getComicById,
+  getAllComics,
+};
