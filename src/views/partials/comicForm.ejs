@@ -1,18 +1,18 @@
 <form method="POST">
   <label>
     Comic Name:
-    <input type="text" name="name" value="<%= comic.name %>" />
+    <input type="text" name="name" value="<%= locals.comic?.name %>" />
   </label>
   <label>
-    Publish Date: <%= comic.publishdate %>
-    <input type="date" name="publishdate" value="<%= comic.publishdate %>" />
+    Publish Date: <%= formatDateAsHTML(locals.comic?.publishdate || new Date()) %>
+    <input type="date" name="publishdate" value="<%= formatDateAsHTML(locals.comic?.publishdate || new Date()) %>" />
   </label>
   <label>
     Author First Name:
     <input
       type="text"
       name="authorfirstname"
-      value="<%= comic.authorfirstname %>"
+      value="<%= locals.comic?.authorfirstname %>"
     />
   </label>
   <label>
@@ -20,7 +20,7 @@
     <input
       type="text"
       name="authorlastname"
-      value="<%= comic.authorlastname %>"
+      value="<%= locals.comic?.authorlastname %>"
     />
   </label>
   <label>
@@ -28,7 +28,7 @@
     <input
       type="text"
       name="artistfirstname"
-      value="<%= comic.artistfirstname %>"
+      value="<%= locals.comic?.artistfirstname %>"
     />
   </label>
   <label>
@@ -36,7 +36,7 @@
     <input
       type="text"
       name="artistlastname"
-      value="<%= comic.artistlastname %>"
+      value="<%= locals.comic?.artistlastname %>"
     />
   </label>
   <label>
@@ -44,16 +44,20 @@
     <input
       type="text"
       name="publishername"
-      value="<%= comic.publishername %>"
+      value="<%= locals.comic?.publishername %>"
     />
   </label>
   <label>
     Tags: <% tags.forEach(tag => { %>
     <label>
       <%= tag %> <input type="checkbox" name="tags" value="<%= tag %>" <%=
-      comic.tags.includes(tag) ? "checked" : "" %>>
+      locals.comic?.tags.includes(tag) ? "checked" : "" %>>
     </label>
     <% }) %>
+  </label>
+  <label>
+    Description
+    <textarea name="description"><%= locals.comic?.description %></textarea>
   </label>
   <button type="submit">Submit</button>
 </form>

@@ -1,0 +1,17 @@
+<html>
+<head>
+    <title><%= comic.name %></title>
+    <link href="/style.css" rel="stylesheet" />
+</head>
+<body>
+<div>
+    <h1><%= comic.name %></h1>
+    <h2><%= `${comic.authorlastname}, ${comic.authorfirstname}` %></h2>
+    <h2><%= `${comic.artistlastname}, ${comic.artistfirstname}` %></h2>
+    <h3><%= `${comic.publishername}` %></h2>
+    <h3><%= `${formatDateAsHTML(comic.publishdate)}` %></h2>
+    <p><%= comic.description %></p>
+    <a href="<%= 'update/' + comic.comicid %>">Update</a>
+</div>
+</body>
+</html>

@@ -93,11 +93,11 @@ async function insertComics() {
         'having trained to the point that he can defeat any opponent ' +
         'with a single punch, grows bored from a lack of challenge. ' +
         'He sets out to find powerful opponents, while making allies of other heroes as well.',
-      artistFirstName: 'Yusuke',
-      artistLastName: 'Murata',
-      authorFirstName: 'One',
-      authorLastName: '',
-      publisherName: 'Shueisha',
+      artistfirstname: 'Yusuke',
+      artistlastname: 'Murata',
+      authorfirstname: 'One',
+      authorlastname: '',
+      publishername: 'Shueisha',
       tags: ['Action', 'Thriller'],
     });
     
@@ -107,11 +107,11 @@ async function insertComics() {
       description: 'The story is set in England in the middle-to-late 1880s, and follows Jonathan Joestar, ' +
         'the heir of the wealthy Joestar family, and his adoptive brother Dio Brando, ' +
         'who wishes to take the Joestar fortune for himself. ',
-      artistFirstName: 'Araki',
-      artistLastName: 'Hirohiko',
-      authorFirstName: 'Araki',
-      authorLastName: 'Hirohiko',
-      publisherName: 'Shueisha',
+      artistfirstname: 'Araki',
+      artistlastname: 'Hirohiko',
+      authorfirstname: 'Araki',
+      authorlastname: 'Hirohiko',
+      publishername: 'Shueisha',
       tags: ['Action', 'Romance'],
     });
   } catch (e) {

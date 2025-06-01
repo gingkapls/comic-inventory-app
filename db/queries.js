@@ -1,26 +1,26 @@
 require('dotenv').config();
 const pool = require('./pool');
 
-async function insertPublisher({ name }) {
+async function insertPublisher({ publishername }) {
   const { rows } = await pool.query(
     'INSERT INTO Publishers (Name) values ($1) RETURNING PublisherId, Name',
-    [name]
+    [publishername]
   );
   return rows[0];
 }
 
-async function insertAuthor({ firstName, lastName }) {
+async function insertAuthor({ authorfirstname, authorlastname }) {
   const { rows } = await pool.query(
     'INSERT INTO Authors (FirstName, LastName) values ($1, $2) RETURNING AuthorId, FirstName, LastName',
-    [firstName, lastName]
+    [authorfirstname, authorlastname]
   );
   return rows[0];
 }
 
-async function insertArtist({ firstName, lastName }) {
+async function insertArtist({ artistfirstname, artistlastname }) {
   const { rows } = await pool.query(
     'INSERT INTO Artists (FirstName, LastName) values ($1, $2) RETURNING ArtistId, FirstName, LastName',
-    [firstName, lastName]
+    [artistfirstname, artistlastname]
   );
   return rows[0];
 }
@@ -33,26 +33,26 @@ async function insertComic({ name, publishdate, description }) {
   return rows[0];
 }
 
-async function getAuthorId({ firstName, lastName }) {
+async function getAuthorId({ authorfirstname, authorlastname }) {
   const { rows } = await pool.query(
     'SELECT AuthorId from Authors WHERE ($1) = Authors.FirstName AND ($2) = Authors.LastName',
-    [firstName, lastName]
+    [authorfirstname, authorlastname]
   );
   return rows[0];
 }
 
-async function getArtistId({ firstName, lastName }) {
+async function getArtistId({ artistfirstname, artistlastname }) {
   const { rows } = await pool.query(
     'SELECT ArtistId from Artists WHERE ($1) = Artists.FirstName AND ($2) = Artists.LastName',
-    [firstName, lastName]
+    [artistfirstname, artistlastname]
   );
   return rows[0];
 }
 
-async function getPublisherId({ name }) {
+async function getPublisherId({ publishername }) {
   const { rows } = await pool.query(
     'SELECT PublisherId from Publishers WHERE ($1) = Publishers.Name',
-    [name]
+    [publishername]
   );
   return rows[0];
 }
@@ -64,148 +64,167 @@ async function getComicByName({ name }) {
   return rows[0];
 }
 
-async function addOrGetPublisher({ name }) {
+async function addOrGetPublisher({ publishername }) {
   try {
-    return await insertPublisher({ name });
+    return await insertPublisher({ publishername });
   } catch (e) {
     console.error('There was an error', e);
-    return await getPublisherId({ name });
+    return await getPublisherId({ publishername });
   }
 }
 
-async function addOrGetAuthor({ firstName, lastName }) {
+async function addOrGetAuthor({ authorfirstname, authorlastname }) {
   try {
-    return await insertAuthor({ firstName, lastName });
+    return await insertAuthor({ authorfirstname, authorlastname });
   } catch (e) {
     console.error('There was an error', e);
-    return await getAuthorId({ firstName, lastName });
+    return await getAuthorId({ authorfirstname, authorlastname });
   }
 }
 
-async function addOrGetArtist({ firstName, lastName }) {
+async function addOrGetArtist({ artistfirstname, artistlastname }) {
   try {
-    return await insertArtist({ firstName, lastName });
+    return await insertArtist({ artistfirstname, artistlastname });
   } catch (e) {
-    console.error('There was an error', e);
-    return await getArtistId({ firstName, lastName });
+    console.error('expected: artist already exists', e);
+    return await getArtistId({ artistfirstname, artistlastname });
   }
 }
 
-async function linkArtistComic({ artistId, comicId }) {
+async function linkArtistComic({ artistid, comicid }) {
   const { rows } = await pool.query(
     'INSERT INTO Artists_Draw_Comics (ArtistId, ComicId) VALUES ($1, $2)',
-    [artistId, comicId]
+    [artistid, comicid]
   );
   return rows[0];
 }
 
-async function linkAuthorComic({ authorId, comicId }) {
+async function linkAuthorComic({ authorid, comicid }) {
   const { rows } = await pool.query(
     'INSERT INTO Authors_Write_Comics (AuthorId, ComicId) VALUES ($1, $2)',
-    [authorId, comicId]
+    [authorid, comicid]
   );
   return rows[0];
 }
 
-async function linkPublisherComic({ publisherId, comicId }) {
+async function linkPublisherComic({ publisherid, comicid }) {
   const { rows } = await pool.query(
     'INSERT INTO Publisher_Publishes_Comics (PublisherId, ComicId) VALUES ($1, $2)',
-    [publisherId, comicId]
+    [publisherid, comicid]
   );
   return rows[0];
 }
 
-async function linkComicTags({ comicId, tagName }) {
+async function linkComicTags({ comicid, tagname }) {
   const { rows } = await pool.query(
     `INSERT INTO Comics_Tags (ComicId, TagId) VALUES ($1, (SELECT TagId from Tags WHERE TagName = ($2))) RETURNING ComicId, TagId`,
-    [comicId, tagName]
+    [comicid, tagname]
   );
   return rows[0];
 }
 
-async function updateAuthorById({ authorId, firstName, lastName }) {
+async function updateAuthorById({ authorid, authorfirstname, authorlastname }) {
   await pool.query(
     'UPDATE Authors SET FirstName = ($2), LastName = ($3) WHERE AuthorID = ($1)',
-    [authorId, firstName, lastName]
+    [authorid, authorfirstname, authorlastname]
   );
 
   return;
 }
 
-async function updateArtistById({ artistId, firstName, lastName }) {
+async function updateArtistById({ artistid, artistfirstname, artistlastname }) {
   await pool.query(
     'UPDATE Artists SET FirstName = ($2), LastName = ($3) WHERE ArtistId = ($1)',
-    [artistId, firstName, lastName]
+    [artistid, artistfirstname, artistlastname]
   );
 
   return;
 }
 
-async function updatePublisherById({ publisherId, name }) {
+async function updatePublisherById({ publisherid, publishername }) {
   await pool.query(
     'UPDATE Publishers SET Name = ($2) WHERE PublisherId = ($1)',
-    [publisherId, name]
+    [publisherid, publishername]
   );
 
   return;
 }
 
-async function updateComicById({ comicId, name, publishdate, description }) {
+async function updateComicById({ comicid, name, publishdate, description }) {
   await pool.query(
     'UPDATE Comics SET NAME = ($2), PublishDate = ($3), DESCRIPTION = ($4) where ComicId = ($1)',
-    [comicId, name, publishdate, description]
+    [comicid, name, publishdate, description]
   );
 }
 
-async function removeComicTags({ comicId }) {
+async function removeComicTags({ comicid }) {
   const { rows } = await pool.query(
     `
     DELETE FROM Comics_Tags WHERE ComicId = ($1) RETURNING ComicId`,
-    [comicId]
+    [comicid]
   );
 
   return rows[0];
+}
+
+async function deleteComicById({ comicid }) {
+  const queries = [
+    pool.query(`DELETE FROM Artists_DRAW_Comics WHERE ComicId = ($1)`, [
+      comicid,
+    ]),
+    pool.query(`DELETE FROM Authors_Write_Comics WHERE ComicId = ($1)`, [
+      comicid,
+    ]),
+    pool.query(`DELETE FROM Publishers_Publish_Comics WHERE ComicId = ($1)`, [
+      comicid,
+    ]),
+    pool.query(`DELETE FROM Comics WHERE ComicId = ($1)`, [comicid]),
+  ];
+
+  return await Promise.allSettled(queries);
 }
 
 async function addComic({
   name,
   publishdate,
   description,
-  artistFirstName,
-  artistLastName,
-  authorFirstName,
-  authorLastName,
-  publisherName,
+  artistfirstname,
+  artistlastname,
+  authorfirstname,
+  authorlastname,
+  publishername,
   tags,
 }) {
   try {
-    const { comicid: comicId } = await insertComic({
+    const { comicid } = await insertComic({
       name,
       description,
       publishdate,
     });
 
-    const { authorid: authorId } = await addOrGetAuthor({
-      firstName: authorFirstName,
-      lastName: authorLastName,
+    const { authorid } = await addOrGetAuthor({
+      authorfirstname,
+      authorlastname,
     });
 
-    const { artistid: artistId } = await addOrGetArtist({
-      firstName: artistFirstName,
-      lastName: artistLastName,
+    const { artistid } = await addOrGetArtist({
+      artistfirstname,
+      artistlastname,
     });
 
-    const { publisherid: publisherId } = await addOrGetPublisher({
-      name: publisherName,
+    const { publisherid } = await addOrGetPublisher({
+      publishername,
     });
 
-    linkArtistComic({ artistId, comicId });
-    linkAuthorComic({ authorId, comicId });
-    linkPublisherComic({ publisherId, comicId });
+    await linkArtistComic({ artistid, comicid });
+    await linkAuthorComic({ authorid, comicid });
+    await linkPublisherComic({ publisherid, comicid });
 
-    tags.forEach((tagName) => {
-      linkComicTags({ comicId, tagName });
-    });
+    if (tags?.length === 0) return;
+
+    for (const tagname of tags) {
+      await linkComicTags({ comicid, tagname });
+    }
   } catch (e) {
     console.error('there was an error', e);
   }
@@ -215,58 +234,49 @@ async function getComicWorkerIds({ comicid }) {
   const { rows } = await pool.query(
     `SELECT AuthorId, ComicId, PublisherId, ArtistId
     FROM DeepComicDetails
-    WHERE ComicId = ($1)`
+    WHERE ComicId = ($1)`,
+    [comicid]
   );
 
-  const {
-    comicid: comicId,
-    authorId: authorId,
-    artistId: artistId,
-    publisherid: publisherId,
-  } = rows[0];
-
-  return {
-    comicId,
-    authorId,
-    artistId,
-    publisherId,
-  };
+  return rows[0];
 }
 
 async function updateComic({
-  comicId,
+  comicid,
   name,
   publishdate,
   description,
-  artistFirstName,
-  artistLastName,
-  authorFirstName,
-  authorLastName,
-  publisherName,
+  artistfirstname,
+  artistlastname,
+  authorfirstname,
+  authorlastname,
+  publishername,
   tags,
 }) {
   try {
-    const { authorId, artistId, publisherId } = await getComicWorkerIds({
-      comicId,
+    const { authorid, artistid, publisherid } = await getComicWorkerIds({
+      comicid,
     });
 
-    updateComicById({ comicId, name, publishdate, description });
+    updateComicById({ comicid, name, publishdate, description });
     updateArtistById({
-      artistId,
-      firstName: artistFirstName,
-      lastName: artistLastName,
+      artistid,
+      artistfirstname,
+      artistlastname,
     });
     updateAuthorById({
-      authorId,
-      firstName: authorFirstName,
-      lastName: authorLastName,
+      authorid,
+      authorfirstname,
+      authorlastname,
     });
-    updatePublisherById({ publisherId, publisherName });
+    updatePublisherById({ publisherid, publishername });
 
-    removeComicTags({ comicId });
+    removeComicTags({ comicid });
+    
+    if (tags.length === 0) return;
 
-    for (const tagName of tags) {
-      await linkComicTags({ comicId, tagName });
+    for (const tagname of tags) {
+      await linkComicTags({ comicid, tagname });
     }
   } catch (e) {
     console.error('there was an error', e);
@@ -278,10 +288,10 @@ async function getAllTags() {
   return rows.map((row) => row.tagname);
 }
 
-async function getTagsByComidId(comicId) {
+async function getTagsByComidId(comicid) {
   const { rows } = await pool.query(
     `SELECT TagName from Tags WHERE TagId IN (SELECT TagId FROM Comics_Tags WHERE ComicId = ($1))`,
-    [comicId]
+    [comicid]
   );
 
   return rows.map((row) => row.tagname);
@@ -308,12 +318,12 @@ async function getComicsByTagName(tagname) {
   return rows;
 }
 
-async function getComicById(comicId) {
+async function getComicById(comicid) {
   const { rows } = await pool.query(
     'SELECT * from DeepComicDetails WHERE ComicId = $1',
-    [comicId]
+    [comicid]
   );
-  const tags = await getTagsByComidId(comicId);
+  const tags = await getTagsByComidId(comicid);
 
   return { ...rows[0], tags };
 }
@@ -326,4 +336,5 @@ module.exports = {
   getComicByName,
   getComicById,
   getAllComics,
+  deleteComicById,
 };

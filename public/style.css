@@ -1,5 +1,14 @@
 .comic-card {
-    border: 2px solid gray;
-    margin: 5px;
-    padding: 20px;
+  border: 2px solid gray;
+  margin: 5px;
+  padding: 20px;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  background-color: light-dark(#ffffff, #232323);
+  color: light-dark(#232323, #ffffff);
 }
