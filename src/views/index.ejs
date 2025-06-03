@@ -5,6 +5,11 @@
   </head>
   <body>
     <h1>Comics</h1>
+    <a href="/">All</a>
+    <% tags.forEach(tagname => { %>
+      <a href="<%= '/tags/' + tagname %>"><%= tagname %></a>
+    <% }) %>
+    <br>
     <a href="/comics/add">Add a comic</a>
     <% if (locals.comics?.length === 0) { %>
     <p>No comics found</p>

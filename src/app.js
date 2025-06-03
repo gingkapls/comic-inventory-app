@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 8080;
 
 const indexRouter = require('./routes/indexRouter');
 const comicRouter = require('./routes/comicRouter');
+const tagRouter = require('./routes/tagRouter');
 
 // ejs setup
 app.set('views', path.join(__dirname, 'views'));
@@ -22,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routers
 app.use('/', indexRouter);
 app.use('/comics', comicRouter);
+app.use('/tags', tagRouter);
 
 
 app.listen(PORT, () => {

@@ -1,8 +1,10 @@
-const { getAllComics } = require("../../db/queries");
+const { getAllComics, getAllTags } = require("../../db/queries");
 
 async function getIndex (req, res, next) {
     const comics = await getAllComics();
-    res.render('index', { comics });
+    const tags = await getAllTags();
+    console.log(tags);
+    res.render('index', { comics, tags });
 }
 
 module.exports = { getIndex} ;

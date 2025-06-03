@@ -115,12 +115,21 @@ async function linkPublisherComic({ publisherid, comicid }) {
   return rows[0];
 }
 
-async function linkComicTags({ comicid, tagname }) {
+async function linkComicSingleTag({ comicid, tagname }) {
   const { rows } = await pool.query(
     `INSERT INTO Comics_Tags (ComicId, TagId) VALUES ($1, (SELECT TagId from Tags WHERE TagName = ($2))) RETURNING ComicId, TagId`,
     [comicid, tagname]
   );
   return rows[0];
+}
+
+async function linkComicTags({ comicid, tags }) {
+  if (!Array.isArray(tags)) tags = [tags];
+
+  const results = tags.map((tagname) =>
+    linkComicSingleTag({ comicid, tagname })
+  );
+  return await Promise.allSettled(results);
 }
 
 async function updateAuthorById({ authorid, authorfirstname, authorlastname }) {
@@ -220,11 +229,7 @@ async function addComic({
     await linkAuthorComic({ authorid, comicid });
     await linkPublisherComic({ publisherid, comicid });
 
-    if (tags?.length === 0) return;
-
-    for (const tagname of tags) {
-      await linkComicTags({ comicid, tagname });
-    }
+    await linkComicTags({ comicid, tags });
   } catch (e) {
     console.error('there was an error', e);
   }
@@ -272,12 +277,9 @@ async function updateComic({
     updatePublisherById({ publisherid, publishername });
 
     removeComicTags({ comicid });
-    
-    if (tags.length === 0) return;
 
-    for (const tagname of tags) {
-      await linkComicTags({ comicid, tagname });
-    }
+    if (tags?.length === 0) return;
+    await linkComicTags({ comicid, tags });
   } catch (e) {
     console.error('there was an error', e);
   }
@@ -304,7 +306,7 @@ async function getAllComics() {
 
 async function getComicsByTagName(tagname) {
   const { rows } = await pool.query(
-    `SELECT Comics.* from DeepComicDetails
+    `SELECT * from DeepComicDetails
       WHERE ComicId IN
         (SELECT ComicID
           FROM Comics_Tags
