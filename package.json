@@ -5,6 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node --watch src/app.js",
+    "populate": "node db/resetdb.js && node db/populatedb.js",
     "start": "node src/app.js"
   },
   "keywords": [],
